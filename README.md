@@ -5,7 +5,6 @@ A Docker container for running SteamCMD on ARM64 architecture using FEX emulatio
 ## Prerequisites
 
 - Docker installed on your ARM64 system
-- FEX-Emu with RootFS installed (for x86_64 emulation)
 
 ## Quick Start
 
