@@ -38,11 +38,6 @@ docker run -it -v /path/to/server:/serverfiles jublx/steamcmd-arm64 \
     +quit
 ```
 
-## Environment Variables
-
-- `STEAMCMD_DIR`: Directory where SteamCMD is installed (default: `/opt/steamcmd`)
-- `STEAMCMD_USER`: User to run SteamCMD as (default: `steam`)
-
 ## Notes
 
 - This image uses FEX-Emu for x86_64 emulation, which may impact performance
