@@ -2,7 +2,7 @@
 
 
 WORKSPACE="/root/Steam"
-SERVER_SCRIPT="server.sh"
+
 
 # usage function
 function usage()
@@ -12,19 +12,24 @@ function usage()
     Usage: entrypoint.sh [--install <GAME_ID>] [--script <PATH>]
 
     required arguments:
-        -n, --name <NAME>           server name
+        -n, --server-name <NAME>                             server name
+        -s, --server-executable <SCRIPT_EXECUTABLE>   name of the server script executable
     optional arguments:
-        -i, --install <GAME_ID>                     install server from the steamdb id
-        -r, --run-script <PATH>                     use steamcmd runscript, must mount the file beforehand in the container
-        -s, --server-script <SCRIPT_EXECUTABLE>     name of the server script executable
+        -i, --install <GAME_ID>                       install server from the steamdb id
+        -r, --run-script <PATH>                       use steamcmd runscript, must mount the file beforehand in the container
 HEREDOC
 }
 
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    -n|--name)
+    -n|--server-name)
       SERVER_NAME="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -s|--server-executable)
+      SERVER_EXECUTABLE="$2"
       shift # past argument
       shift # past value
       ;;
@@ -35,11 +40,6 @@ while [[ $# -gt 0 ]]; do
       ;;
     -r|--run-script)
       RUNSCRIPT_PATH="$2"
-      shift # past argument
-      shift # past value
-      ;;
-    -s|--server-script)
-      SERVER_SCRIPT="$2"
       shift # past argument
       shift # past value
       ;;
@@ -55,7 +55,7 @@ while [[ $# -gt 0 ]]; do
 done 
 
 
-if [ -z "$SERVER_NAME" ] ; then
+if [ -z "$SERVER_NAME" ] || [ -z "$SERVER_EXECUTABLE" ]; then
     usage
     exit 1
 fi
@@ -69,5 +69,5 @@ elif [ -n "$GAME_ID" ] ; then
     exec /bin/FEXBash -c "${WORKSPACE}/steamcmd.sh +force_install_dir $SERVER_WORKSPACE +login anonymous +app_update $GAME_ID +exit" 
 fi
 
-chmod u+x "${SERVER_WORKSPACE}/${SERVER_SCRIPT}"
-exec /bin/FEXBash -c "${SERVER_WORKSPACE}/${SERVER_SCRIPT}"
+chmod u+x "${SERVER_WORKSPACE}/${SERVER_EXECUTABLE}"
+exec /bin/FEXBash -c "${SERVER_WORKSPACE}/${SERVER_EXECUTABLE}"

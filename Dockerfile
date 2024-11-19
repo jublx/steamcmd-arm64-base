@@ -77,9 +77,7 @@ WORKDIR /root/Steam
 # Download and run SteamCMD
 RUN curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf -
 
-COPY entrypoint.sh /root/Steam/entrypoint.sh
+COPY entrypoint.sh /
 
-RUN chmod +x /root/Steam/entrypoint.sh
-
-ENTRYPOINT ["/root/Steam/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["--help"]

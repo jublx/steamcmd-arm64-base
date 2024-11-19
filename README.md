@@ -1,6 +1,6 @@
 # SteamCMD ARM64 Docker Image
 
-A Docker container for running SteamCMD on ARM64 architecture using FEX emulation. This container allows you to run Steam dedicated servers and download Steam content on ARM64 platforms like Apple Silicon Macs, Raspberry Pi, and ARM-based cloud instances.
+A Docker container for running SteamCMD servers on ARM64 architecture using FEX emulation. This container allows you to run Steam dedicated servers and download Steam content on ARM64 platforms like Apple Silicon Macs, Raspberry Pi, and ARM-based cloud instances.
 
 ## Prerequisites
 
@@ -22,20 +22,26 @@ docker run -it jublx/steamcmd-arm64:latest
 docker build -t jublx/steamcmd-arm64 .
 ```
 
-## Usage Examples
+## Usage
 
-### Running SteamCMD directly:
+### Installing a game server
+
 ```bash
-docker run -it jublx/steamcmd-arm64 +login anonymous +quit
+docker run -it --rm -v /path/to/server:/root/Steam/<SERVER_NAME> jublx/steamcmd-arm64 \
+    -n <SERVER_NAME> \
+    -i <GAME_ID> \
+    -s <SERVER_EXECUTABLE>
 ```
 
-### Installing a game server:
+>Note: To detach from a container without stopping it, use Ctrl+P followed by Ctrl+Q.
+
+### Examples
+
 ```bash
-docker run -it -v /path/to/server:/serverfiles jublx/steamcmd-arm64 \
-    +login anonymous \
-    +force_install_dir /serverfiles \
-    +app_update <app_id> \
-    +quit
+docker run -it --rm -v /path/to/server:/root/Steam/Satisfactory jublx/steamcmd-arm64 \
+    -n Satisfactory \
+    -i 1690800 \
+    -s FactoryServer.sh
 ```
 
 ## Notes
