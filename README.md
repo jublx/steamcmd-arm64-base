@@ -17,12 +17,16 @@ docker build -t jublx/steamcmd-arm64-base .
 You can run the container using the following command:
 
 ```bash
-docker run -it --rm --cap-add SYS_ADMIN --device /dev/fuse \
+docker run -it --rm \
     -v /tmp/fex-emu-cache:/home/steam/.fex-emu \
     jublx/steamcmd-arm64-base
 ```
 
+>**Important**: if you run Docker in rootless mode, you must add the `--cap-add SYS_ADMIN --device /dev/fuse` flags to the command line.
+
 The `-v /tmp/fex-emu-cache:/home/steam/.fex-emu` flag mounts a volume to the FEXEmu configuration directory. This allows to persist the RootFS and prevents from downloading it each time you run the image.
+
+You may also want to redirect server game port(s) using the `-p` flag, or by setting the `--net`option to `host`. More information in the [Docker documentation](https://docs.docker.com/).
 
 ## Notes
 
