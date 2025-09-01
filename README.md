@@ -6,42 +6,20 @@ A Docker container for running SteamCMD servers on ARM64 architecture using FEX 
 
 - Docker installed on your ARM64 system
 
-## Quick Start
-
-```bash
-# Pull the image
-docker pull jublx/steamcmd-arm64:latest
-
-# Run interactive shell
-docker run -it jublx/steamcmd-arm64:latest
-```
-
 ## Building the Image
 
 ```bash
-docker build -t jublx/steamcmd-arm64 .
+docker build -t jublx/steamcmd-arm64-base .
 ```
 
 ## Usage
 
-### Installing a game server
+You can run the container using the following command:
 
 ```bash
-docker run -it --rm -v /path/to/server:/root/Steam/<SERVER_NAME> jublx/steamcmd-arm64 \
-    -n <SERVER_NAME> \
-    -i <GAME_ID> \
-    -s <SERVER_EXECUTABLE>
-```
-
->Note: To detach from a container without stopping it, use Ctrl+P followed by Ctrl+Q.
-
-### Examples
-
-```bash
-docker run -it --rm -v /path/to/server:/root/Steam/Satisfactory jublx/steamcmd-arm64 \
-    -n Satisfactory \
-    -i 1690800 \
-    -s FactoryServer.sh
+docker run -it --rm --cap-add SYS_ADMIN --device /dev/fuse \
+    -v /tmp/fex-emu-cache:/home/steam/.fex-emu \
+    jublx/steamcmd-arm64-base
 ```
 
 ## Notes
@@ -52,17 +30,11 @@ docker run -it --rm -v /path/to/server:/root/Steam/Satisfactory jublx/steamcmd-a
 
 ## Dockerfile Details
 
-The image is based on Ubuntu and includes:
+The image is based on Ubi9-minimal and includes:
 - FEX-emu user static for x86_64 emulation
 - Required 32-bit libraries
 - SteamCMD installation
 - Necessary dependencies for Steam
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Submit a Pull Request
 
 ## License
 

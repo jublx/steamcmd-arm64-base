@@ -1,83 +1,59 @@
-# Use the official Ubuntu 22.04 as the base image
-FROM ubuntu:22.04
+FROM redhat/ubi9 AS builder
 
-# Set environment variables to avoid interactive prompts
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install necessary dependencies
-RUN apt-get update && \
-    apt-get install -y \
+RUN dnf update -y \
+    && curl -sSL -o /tmp/epel-release.rpm 'https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm' \
+    && dnf install -y /tmp/epel-release.rpm \
+    && dnf install -y \
     git \
     cmake \
     ninja-build \
     pkg-config \
     ccache \
     clang \
-    llvm \
     lld \
-    binfmt-support \
-    libsdl2-dev \
-    libepoxy-dev \
-    libssl-dev \
-    python-setuptools \
-    g++-x86-64-linux-gnu \
-    nasm \
+    llvm \
+    llvm-devel \
+    openssl-devel \
     python3-clang \
-    libstdc++-10-dev-i386-cross \
-    libstdc++-10-dev-amd64-cross \
-    libstdc++-10-dev-arm64-cross \
-    squashfs-tools \
-    squashfuse \
-    libc-bin \
-    expect \
-    curl \
-    sudo \
-    qtdeclarative5-dev \
-    qml-module-qtquick-controls \
-    qml-module-qtquick-controls2 \
-    qml-module-qtquick-dialogs \
-    fuse
+    && dnf clean all
 
-# Create a new user and set their home directory
-RUN useradd -m -s /bin/bash fex
+WORKDIR /tmp
 
-RUN usermod -aG sudo fex
+RUN git clone --recurse-submodules --depth 1 --branch "FEX-2508.1" https://github.com/FEX-Emu/FEX.git \
+    && cd FEX \
+    && mkdir Build \
+    && cd Build \
+    && CC=clang CXX=clang++ cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DUSE_LINKER=lld -DBUILD_FEXCONFIG=False -DENABLE_LTO=True -DBUILD_TESTS=False -DENABLE_ASSERTIONS=False -DUSE_LEGACY_BINFMTMISC=True -G Ninja .. \
+    && ninja
 
-RUN echo "fex ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/fex
+WORKDIR /tmp/FEX/Build
 
-USER fex
+RUN ninja install -j4
 
-WORKDIR /home/fex
+WORKDIR /tmp/steam
 
-# Clone the FEX repository and build it
-RUN git clone --recurse-submodules https://github.com/FEX-Emu/FEX.git && \
-    cd FEX && \
-    mkdir Build && \
-    cd Build && \
-    CC=clang CXX=clang++ cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DUSE_LINKER=lld -DENABLE_LTO=True -DBUILD_TESTS=False -DENABLE_ASSERTIONS=False -DUSE_LEGACY_BINFMTMISC=True -G Ninja .. && \
-    ninja
-
-WORKDIR /home/fex/FEX/Build
-
-RUN sudo ninja install -j4 && \
-    sudo ninja binfmt_misc
-
-RUN sudo apt install wget
-
-USER root
-
-RUN echo 'root:steamcmd' | chpasswd
-
-WORKDIR /root/.fex-emu/RootFS/
-
-RUN FEXRootFSFetcher --distro-name "ubuntu" --distro-version "22.04" -y -x
-
-WORKDIR /root/Steam
-
-# Download and run SteamCMD
 RUN curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf -
 
-COPY entrypoint.sh /
+FROM redhat/ubi9-minimal
 
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["--help"]
+RUN useradd -m -s /bin/bash steam
+
+COPY --from=builder /usr/bin/FEX* /usr/bin
+COPY --from=builder /tmp/epel-release.rpm /tmp
+COPY --from=builder --chown=steam /tmp/steam /home/steam
+
+RUN microdnf update -y \
+    && rpm -ivh /tmp/epel-release.rpm \
+    && microdnf install -y fuse squashfuse glibc-langpack-en \
+    && microdnf clean all \
+    && rm -f /tmp/epel-release.rpm
+
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+USER steam
+
+WORKDIR /home/steam
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["bash"]
