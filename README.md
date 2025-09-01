@@ -22,6 +22,8 @@ docker run -it --rm --cap-add SYS_ADMIN --device /dev/fuse \
     jublx/steamcmd-arm64-base
 ```
 
+The `-v /tmp/fex-emu-cache:/home/steam/.fex-emu` flag mounts a volume to the FEXEmu configuration directory. This allows to persist the RootFS and prevents from downloading it each time you run the image.
+
 ## Notes
 
 - This image uses FEX-Emu for x86_64 emulation, which may impact performance
@@ -35,6 +37,11 @@ The image is based on Ubi9-minimal and includes:
 - Required 32-bit libraries
 - SteamCMD installation
 - Necessary dependencies for Steam
+
+## Additional Information
+
+- [SteamCMD Documentation](https://developer.valvesoftware.com/wiki/SteamCMD)
+- [Docker Documentation](https://docs.docker.com/)
 
 ## License
 
